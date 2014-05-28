@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Network.ZeroConf;
 
-namespace ServiceDiscovery
+namespace AstonClub.ServiceDiscovery
 {
     public class Service
     {

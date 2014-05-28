@@ -14,7 +14,7 @@ namespace ServiceDiscovery.Tests
         {
             // arrange
             var id = Guid.NewGuid().ToString();
-            var serviceName = Guid.NewGuid().ToString();
+            var serviceName = "noposproxy";// Guid.NewGuid().ToString();
             var advertiser = new Advertiser(serviceName, id, 1234);
             advertiser.Start();
             Thread.Sleep(1000);

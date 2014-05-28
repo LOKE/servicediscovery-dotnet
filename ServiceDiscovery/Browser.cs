@@ -6,7 +6,7 @@ using System.Threading;
 using Network.Bonjour;
 using Network.ZeroConf;
 
-namespace ServiceDiscovery
+namespace AstonClub.ServiceDiscovery
 {
     public class Browser: IDisposable
     {

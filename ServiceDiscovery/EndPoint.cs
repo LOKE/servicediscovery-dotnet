@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ServiceDiscovery
+﻿namespace AstonClub.ServiceDiscovery
 {
     public class EndPoint
     {

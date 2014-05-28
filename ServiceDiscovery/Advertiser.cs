@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Network.Bonjour;
 using Network.ZeroConf;
 
-namespace ServiceDiscovery
+namespace AstonClub.ServiceDiscovery
 {
     public class Advertiser : IDisposable
     {
