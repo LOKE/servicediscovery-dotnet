@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading;
 using Network.Bonjour;
 using Network.ZeroConf;
@@ -67,6 +69,9 @@ namespace AstonClub.ServiceDiscovery
             _services[item.Name + "." + item.Protocol] = item;
             Debug.Print("Found a service " + item.Name + " with hostname " + item.HostName);
             if (!item.Addresses.Any()) return;
+
+            // we want to prioritise IPs on our networks
+            item.Addresses[0].Addresses = SortIps(item.Addresses[0].Addresses);
             foreach (var address in item.Addresses[0].Addresses)
             {
                 if (address.IsIPv6Teredo) continue; // skip ipv6
@@ -75,6 +80,91 @@ namespace AstonClub.ServiceDiscovery
             _waitEvent.Set();
             OnServicesUpdated();
         }
+
+        private class Ip
+        {
+            public IPAddress Address { get; set; }
+
+            public IPAddress Mask { get; set; }
+
+            public bool IsSameNetworkAs(IPAddress address)
+            {
+                IPAddress network1 = GetNetworkAddress(address, Mask);
+                IPAddress network2 = GetNetworkAddress(Address, Mask);
+
+                return network1.Equals(network2);
+            }
+
+            private IPAddress GetNetworkAddress(IPAddress address, IPAddress subnetMask)
+            {
+                byte[] ipAdressBytes = address.GetAddressBytes();
+                byte[] subnetMaskBytes = subnetMask.GetAddressBytes();
+
+                if (ipAdressBytes.Length != subnetMaskBytes.Length)
+                    throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+
+                byte[] broadcastAddress = new byte[ipAdressBytes.Length];
+                for (int i = 0; i < broadcastAddress.Length; i++)
+                {
+                    broadcastAddress[i] = (byte)(ipAdressBytes[i] & (subnetMaskBytes[i]));
+                }
+                return new IPAddress(broadcastAddress);
+            }
+        }
+
+        private List<Ip> _ips;
+
+        private List<Ip> Ips
+        {
+            get { return _ips ?? GetIps(); }
+        }
+
+        private List<Ip> GetIps()
+        {
+            var ips = new List<Ip>();
+
+            foreach (NetworkInterface iface in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (iface.OperationalStatus == OperationalStatus.Up)
+                {
+                    foreach (var address in iface.GetIPProperties().UnicastAddresses)
+                    {
+                        if (address.Address.IsIPv6LinkLocal || System.Net.IPAddress.IsLoopback(address.Address))
+                            continue;
+
+                        ips.Add(new Ip()
+                        {
+                            Address = address.Address, Mask = address.IPv4Mask
+                        });
+                    }
+                }
+            }
+
+            return ips;
+        }
+
+        private IList<IPAddress> SortIps(IList<IPAddress> addresses)
+        {
+            var myIps = Ips;
+            var priorityIps = new List<IPAddress>();
+            var secondaryIps = new List<IPAddress>();
+
+            foreach (var address in addresses)
+            {
+                if (!address.IsIPv6Teredo && IsInNetwork(myIps, address)) priorityIps.Add(address);
+                else secondaryIps.Add(address);
+            }
+
+            priorityIps.AddRange(secondaryIps);
+
+            return priorityIps;
+        }
+
+        private bool IsInNetwork(IEnumerable<Ip> myIps, IPAddress addressToCheck)
+        {
+            return myIps.Any(ip => ip.IsSameNetworkAs(addressToCheck));
+        }
+
         private void ServiceRemoved(IService item)
         {
             string key = item.Name + "." + item.Protocol;

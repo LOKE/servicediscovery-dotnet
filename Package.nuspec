@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>AstonClub.ServiceDiscovery</id>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <authors>Aston Club</authors>
     <owners>Aston Club</owners>
     <title>Aston Club Service Discovery</title>
@@ -11,7 +11,7 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Service advertise and discovery module</description>
-    <releaseNotes>Fixed namespace.</releaseNotes>
+    <releaseNotes>Improve auto discovery for multi homed servers.</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>AstonClub Service Discovery</tags>
   </metadata>

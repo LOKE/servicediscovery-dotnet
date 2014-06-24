@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using AstonClub.ServiceDiscovery;
 using NUnit.Framework;
 
 namespace ServiceDiscovery.Tests
